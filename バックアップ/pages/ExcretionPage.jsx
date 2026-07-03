@@ -2,24 +2,6 @@ import { HOURS } from "../data/constants";
 import { bowelCount } from "../utils/alerts";
 import { createRecordMeta, requireStaff } from "../utils/record";
 
-function latestExcretion(day = {}) {
-  let latest = null;
-
-  HOURS.forEach((h) => {
-    const cell = day.hours?.[h] || {};
-    if (cell.stool || cell.urine) {
-      latest = {
-        hour: h,
-        stool: cell.stool || "なし",
-        urine: cell.urine || "なし",
-        recordedBy: cell.recordedBy || "",
-      };
-    }
-  });
-
-  return latest;
-}
-
 export default function ExcretionPage({ data, setData, rooms, date, now, currentStaff }) {
   const currentHour = now.getHours();
 
@@ -42,52 +24,7 @@ export default function ExcretionPage({ data, setData, rooms, date, now, current
   return (
     <section className="page">
       <h2>排泄管理</h2>
-      <div className="note">
-        入力した排泄記録は上部の確認カードに大きく表示されます。最新記録・排便換算・最終排尿が一目で確認できます。
-      </div>
-
-      <div className="visibleRecordGrid">
-        {rooms.map((room) => {
-          const day = data.excretions?.[room]?.[date] || {};
-          const bowel = bowelCount(data, room, date);
-          const latest = latestExcretion(day);
-          const hasAnyRecord = latest || day.lastUrination || day.lastBowelDate;
-
-          if (!hasAnyRecord && !name(room)) return null;
-
-          return (
-            <article key={room} className="visibleRecordCard excretionRecordCard">
-              <div className="visibleRecordHeader">
-                <strong>{room}号室 {name(room) || "氏名未入力"}</strong>
-                <span className={bowel.effective >= 1 ? "badge good" : "badge warning"}>
-                  💩換算 {bowel.effective}
-                </span>
-              </div>
-
-              <div className="recordBigLine">
-                <span>🚽 最終排尿</span>
-                <b>{day.lastUrination || latest?.hour + ":00" || "未確認"}</b>
-              </div>
-
-              <div className="recordBigLine">
-                <span>💩 前回排便日</span>
-                <b>{day.lastBowelDate || "未確認"}</b>
-              </div>
-
-              <div className="latestBox">
-                <b>最新記録</b>
-                {latest ? (
-                  <p>{latest.hour}時　尿：{latest.urine}　便：{latest.stool}</p>
-                ) : (
-                  <p>本日の時間別記録はまだありません</p>
-                )}
-                {latest?.recordedBy && <small>記録者：{latest.recordedBy}</small>}
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
+      <div className="note">排泄記録には職員名が自動保存されます。排尿6時間未確認でアラート、少量3回＝中量1回で換算。</div>
       <div className="tableWrap">
         <table>
           <thead>

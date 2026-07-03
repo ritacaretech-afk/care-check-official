@@ -14,22 +14,6 @@ function calcMealWater(meal = {}) {
   return DRINKS.reduce((sum, [key,, ml]) => sum + (drinks[key] ? ml : 0), 0) + (Number(meal.otherWater) || 0);
 }
 
-function calcDailyWater(day = {}) {
-  return MEALS.reduce((sum, meal) => sum + calcMealWater(day[meal.key] || {}), 0);
-}
-
-function mealLabel(meal = {}) {
-  const main = meal.main || "未";
-  const sub = meal.sub || "未";
-  return `主食 ${main} / 副食 ${sub}`;
-}
-
-function medLabel(meal = {}) {
-  const pre = meal.preMed || "未";
-  const post = meal.postMed || "未";
-  return `食前 ${pre} / 食後 ${post}`;
-}
-
 export default function MealPage({ data, setData, rooms, date, currentStaff }) {
   function name(room) {
     return data.residents?.[room]?.name || "";
@@ -85,50 +69,7 @@ export default function MealPage({ data, setData, rooms, date, currentStaff }) {
   return (
     <section className="page">
       <h2>食事・水分・服薬</h2>
-      <div className="note">
-        入力した内容は下の確認カードに大きく表示されます。申し送り・記録確認で見やすい仕様です。
-      </div>
-
-      <div className="visibleRecordGrid">
-        {rooms.map((room) => {
-          const day = data.meals?.[room]?.[date] || {};
-          const dailyWater = calcDailyWater(day);
-          const hasAnyRecord = MEALS.some((m) => {
-            const meal = day[m.key] || {};
-            return meal.main || meal.sub || meal.preMed || meal.postMed || calcMealWater(meal) > 0;
-          });
-
-          if (!hasAnyRecord && !name(room)) return null;
-
-          return (
-            <article key={room} className="visibleRecordCard mealRecordCard">
-              <div className="visibleRecordHeader">
-                <strong>{room}号室 {name(room) || "氏名未入力"}</strong>
-                <span className={dailyWater >= 1000 ? "badge good" : "badge warning"}>
-                  💧合計 {dailyWater}mL
-                </span>
-              </div>
-
-              <div className="mealSummaryRows">
-                {MEALS.map((m) => {
-                  const meal = day[m.key] || {};
-                  const water = calcMealWater(meal);
-
-                  return (
-                    <div key={m.key} className="mealSummaryRow">
-                      <b>{m.label}</b>
-                      <span>🍚 {mealLabel(meal)}</span>
-                      <span>💊 {medLabel(meal)}</span>
-                      <span>💧 {water}mL</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
+      <div className="note">主食・副食は10割→0割。水分はお茶200mL、味噌汁125mLをワンタップで自動計算します。</div>
       <div className="tableWrap">
         <table>
           <thead>
